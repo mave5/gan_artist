@@ -1,6 +1,6 @@
 ﻿from __future__ import print_function
 import numpy as np
-# import sys
+import sys
 import os
 backend="tensorflow"
 os.environ['KERAS_BACKEND'] = backend
@@ -15,6 +15,7 @@ from h5tool import create_celeba_channel_last
 # input_dir and output_dir are passed as arguments.               #
 # Users could set them from the project setting page.             #
 ###################################################################
+
 input_dir = None
 output_dir = None
 log_dir = None
@@ -24,7 +25,8 @@ log_dir = None
 # Keras configs.                                                                #
 # Please refer to https://keras.io/backend .                                    #
 #################################################################################
-# import keras
+
+import keras
 from keras import backend as K
 
 #K.set_floatx('float32')
@@ -66,12 +68,32 @@ def main():
     globals()[func_name](**func_params)
     exit(0)
 
+def renameFileNames(data_dir):
+    #data_dir="./datasets/landscape/"
+    glob_pattern = os.path.join(data_dir, '*.jpg')
+    image_filenames = sorted(glob.glob(glob_pattern))
+    num_images = len(image_filenames)
+    print("there are %s images " %(num_images))
+    for i,imgfn in enumerate(image_filenames):
+        dirname=os.path.dirname(imgfn)
+        ii=str(i+1).rjust(5,"0")
+        imgfn_new=os.path.join(dirname,ii+".jpg")
+        os.rename(imgfn, imgfn_new)
+    print("rename completed!")
+    return
+
 def download():
     h5path = os.path.join(os.getcwd(),'datasets','celeba-128x128.h5');
     if os.path.exists(h5path):
         print('Found celeba-128x128.h5 - skip')
         return
-    data_dir=download_celeb_a(config.data_dir)
+#    data_dir=download_celeb_a(config.data_dir)
+    # renameFileNames(data_dir)    
+    data_dir="./datasets/landscape/"
+    glob_pattern = os.path.join(data_dir, '*.jpg')
+    image_filenames = sorted(glob.glob(glob_pattern))
+    num_images = len(image_filenames)
+    print("there are %s images " %(num_images))
     create_celeba_channel_last(h5path, data_dir, cx=89, cy=121)
 
 

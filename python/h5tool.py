@@ -67,6 +67,7 @@ class HDF5Exporter:
                 ofs += num
 
     def add_images_channel_last(self, img):
+        #print(img.shape)
         assert img.ndim == 4 and img.shape[3] == self.channels and img.shape[1] == img.shape[2]
         assert img.shape[2] >= self.resolution and img.shape[2] == 2 ** int(np.floor(np.log2(img.shape[2])))
         for lod in range(len(self.h5_lods)):
@@ -195,7 +196,8 @@ def create_celeba_channel_last(h5_filename, celeba_dir, cx=89, cy=121):
     #glob_pattern = os.path.join(celeba_dir, 'img_align_celeba_png', '*.png')
     glob_pattern = os.path.join(celeba_dir, '*.jpg')
     image_filenames = sorted(glob.glob(glob_pattern))
-    num_images = 202599
+    #num_images = 202599
+    num_images = len(image_filenames)
     print((len(image_filenames)))
     test = []
     for i in image_filenames:
@@ -206,16 +208,22 @@ def create_celeba_channel_last(h5_filename, celeba_dir, cx=89, cy=121):
         if(test[i]!=test[i-1]+1):
             print((test[i-1],test[i]))
 
-    if len(image_filenames) != num_images:
-        print('Error: Expected to find %d images in %s' % (num_images, glob_pattern))
-        return
+    #if len(image_filenames) != num_images:
+    #    print('Error: Expected to find %d images in %s' % (num_images, glob_pattern))
+    #    return
     
     h5 = HDF5Exporter(h5_filename, 128, 3)
     for idx in range(num_images):
         print('%d / %d\r' % (idx, num_images), end=' ')
-        img = np.asarray(PIL.Image.open(image_filenames[idx]))
-        assert img.shape == (218, 178, 3)
-        img = img[cy - 64 : cy + 64, cx - 64 : cx + 64]
+        img = PIL.Image.open(image_filenames[idx])
+        img=img.resize((128,128))
+        if img.mode != "RGB":
+            img=img.convert('RGB')
+        img = np.asarray(img)
+        
+        #img = np.asarray(PIL.Image.open(image_filenames[idx]))
+        #assert img.shape == (218, 178, 3)
+        #img = img[cy - 64 : cy + 64, cx - 64 : cx + 64]
         #img = img.transpose(2, 0, 1) # HWC => CHW
         h5.add_images_channel_last(img[np.newaxis])
 

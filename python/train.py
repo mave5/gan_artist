@@ -161,8 +161,9 @@ def train_gan(
     network_snapshot_ticks  = 4,
     image_grid_type         = 'default',
     #resume_network          = '000-celeba/network-snapshot-000488',
-    resume_network          = "pre-trained_weight",
-    resume_kimg             = 500000.0,
+    #resume_network          = "pre-trained_weight",
+    resume_network          = None,
+    resume_kimg             = 0.0,
     resume_time             = 0.0):
 
     training_set, drange_orig = load_dataset()
