@@ -1,0 +1,17 @@
+
+
+# images
+*.jpg
+*.jpeg
+*.png
+*.tif
+* *.tiff
+
+
+/images
+
+
+# hdf5
+*.h5
+*.hdf5
+
