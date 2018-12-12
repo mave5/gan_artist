@@ -1,13 +1,14 @@
 ﻿from __future__ import print_function
 import numpy as np
-import sys
+# import sys
 import os
 backend="tensorflow"
 os.environ['KERAS_BACKEND'] = backend
 import argparse
 from datadownload import download_celeb_a
 from h5tool import create_celeba_channel_last
-
+from h5tool import create_data_channel_last
+import config
 
 ###################################################################
 # Variables                                                       #
@@ -26,7 +27,7 @@ log_dir = None
 # Please refer to https://keras.io/backend .                                    #
 #################################################################################
 
-import keras
+# import keras
 from keras import backend as K
 
 #K.set_floatx('float32')
@@ -72,6 +73,10 @@ def renameFileNames(data_dir):
     #data_dir="./datasets/landscape/"
     glob_pattern = os.path.join(data_dir, '*.jpg')
     image_filenames = sorted(glob.glob(glob_pattern))
+    sampleName=image_filenames[0]
+    sampleName=os.path.basename(sampleName).split(".")[0]
+    if sampleName.isdigit():
+        return
     num_images = len(image_filenames)
     print("there are %s images " %(num_images))
     for i,imgfn in enumerate(image_filenames):
@@ -80,21 +85,25 @@ def renameFileNames(data_dir):
         imgfn_new=os.path.join(dirname,ii+".jpg")
         os.rename(imgfn, imgfn_new)
     print("rename completed!")
+    print("-"*50)
+    print("-"*50)
     return
 
-def download():
-    h5path = os.path.join(os.getcwd(),'datasets','celeba-128x128.h5');
+def download(genre,H,W,data_dir):
+    h5_name=genre+"_"+str(H)+"by"+str(W)+".h5"
+    h5path = os.path.join(os.getcwd(),'datasets',h5_name);
     if os.path.exists(h5path):
-        print('Found celeba-128x128.h5 - skip')
+        print(h5path+ "found!")
         return
-#    data_dir=download_celeb_a(config.data_dir)
-    # renameFileNames(data_dir)    
-    data_dir="./datasets/landscape/"
+
+    data_dir=os.path.join(data_dir,genre)
+    renameFileNames(data_dir)    
     glob_pattern = os.path.join(data_dir, '*.jpg')
     image_filenames = sorted(glob.glob(glob_pattern))
     num_images = len(image_filenames)
     print("there are %s images " %(num_images))
-    create_celeba_channel_last(h5path, data_dir, cx=89, cy=121)
+    # create_celeba_channel_last(h5path, data_dir, cx=89, cy=121)
+    create_data_channel_last(h5path, data_dir, imgHW=(H,W))
 
 
 if __name__ == "__main__":
@@ -124,5 +133,6 @@ if __name__ == "__main__":
         config.train.update(resume_network=args.resume_dir)
     if hasattr(args,'resume_kimg') and args.resume_kimg != None:
         config.train.update(resume_kimg=args.resume_kimg)
-    download()
+    
+    download(config.genre,config.H,config.W,config.data_dir)
     main()

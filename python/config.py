@@ -1,8 +1,14 @@
 data_dir = 'datasets'
+import os
+genre="landscape"
+#genre="abstract"
 result_dir = 'results'
 
 random_seed = 1000
 dataset = None
+H,W=512,512
+
+
 
 train = dict(                               # Training parameters:
     func                    = 'train_gan',  # Main training func.
@@ -62,10 +68,12 @@ loss = dict(                                # Loss function:
 )
 
 if 1:
-    run_desc = 'celeba'
+    run_desc = genre
 
-    dataset = dict(h5_path='celeba-128x128.h5', resolution=128, max_labels=0, mirror_augment=True)
+    #dataset = dict(h5_path='celeba-128x128.h5', resolution=128, max_labels=0, mirror_augment=True)
+    h5_path=genre+"_"+str(H)+"by"+str(W)+".h5"
+    dataset = dict(h5_path=h5_path, resolution=H, max_labels=0, mirror_augment=True)
 
-    train.update(lod_training_kimg=800, lod_transition_kimg=800, rampup_kimg=0, total_kimg=10000, minibatch_overrides={})
+    train.update(lod_training_kimg=800, lod_transition_kimg=800, rampup_kimg=0, total_kimg=1000, minibatch_overrides={})
     G.update(fmap_base=2048)
     D.update(fmap_base=2048)

@@ -13,6 +13,8 @@ import pickle
 import argparse
 import threading
 import queue
+#import Queue
+#import queue
 import traceback
 import numpy as np
 import scipy.ndimage
@@ -149,7 +151,8 @@ class ThreadPool(object):
         result, args = self.result_queues[func].get()
         if isinstance(result, ExceptionInfo):
             if verbose_exceptions:
-                print('\n\nWorker thread caught an exception:\n' + result.traceback + '\n', end=' ')
+                #print('\n\nWorker thread caught an exception:\n' + result.traceback + '\n', end=' ')
+                print('\n\nWorker thread caught an exception:\n' + result.traceback + '\n')
             raise result.type(result.value)
         return result, args
 
@@ -196,8 +199,8 @@ def create_celeba_channel_last(h5_filename, celeba_dir, cx=89, cy=121):
     #glob_pattern = os.path.join(celeba_dir, 'img_align_celeba_png', '*.png')
     glob_pattern = os.path.join(celeba_dir, '*.jpg')
     image_filenames = sorted(glob.glob(glob_pattern))
-    #num_images = 202599
-    num_images = len(image_filenames)
+    num_images = 5000 #202599
+    #num_images = len(image_filenames)
     print((len(image_filenames)))
     test = []
     for i in image_filenames:
@@ -214,7 +217,7 @@ def create_celeba_channel_last(h5_filename, celeba_dir, cx=89, cy=121):
     
     h5 = HDF5Exporter(h5_filename, 128, 3)
     for idx in range(num_images):
-        print('%d / %d\r' % (idx, num_images), end=' ')
+        print('%d / %d\r' % (idx, num_images))
         img = PIL.Image.open(image_filenames[idx])
         img=img.resize((128,128))
         if img.mode != "RGB":
@@ -227,10 +230,47 @@ def create_celeba_channel_last(h5_filename, celeba_dir, cx=89, cy=121):
         #img = img.transpose(2, 0, 1) # HWC => CHW
         h5.add_images_channel_last(img[np.newaxis])
 
-    print('%-40s\r' % 'Flushing data...', end=' ')
+    print('%-40s\r' % 'Flushing data...')
     h5.close()
-    print('%-40s\r' % '', end=' ')
+    print('%-40s\r' % '')
     print('Added %d images.' % num_images)
+
+
+def create_data_channel_last(h5_filename, path2images, imgHW=(128,128)):
+    print('Creating data channel last dataset %s from %s' % (h5_filename, path2images))
+    #glob_pattern = os.path.join(celeba_dir, 'img_align_celeba_png', '*.png')
+    glob_pattern = os.path.join(path2images, '*.jpg')
+    image_filenames = sorted(glob.glob(glob_pattern))
+    num_images = len(image_filenames)
+    num_images=5000
+    print((len(image_filenames)))
+    
+    test = []
+    for i in image_filenames:
+        a=i.split('/')[-1]
+        a=a.split('.')[0]
+        test.append(int(a))
+    for i in range(1,len(test)):
+        if(test[i]!=test[i-1]+1):
+            print((test[i-1],test[i]))
+
+    h,w=imgHW
+    h5 = HDF5Exporter(h5_filename, resolution=h, channels=3)
+    for idx in range(num_images):
+        print('%d / %d\r' % (idx, num_images))
+        img = PIL.Image.open(image_filenames[idx])
+        img=img.resize((w,h),PIL.Image.BICUBIC)
+        if img.mode != "RGB":
+            img=img.convert('RGB')
+        img = np.asarray(img)
+        
+        h5.add_images_channel_last(img[np.newaxis])
+
+    print('%-40s\r' % 'Flushing data...')
+    h5.close()
+    print('%-40s\r' % '')
+    print('Added %d images.' % num_images)
+
 
 #----------------------------------------------------------------------------
 
