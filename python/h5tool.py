@@ -19,6 +19,7 @@ import traceback
 import numpy as np
 import scipy.ndimage
 import PIL.Image
+from PIL import Image
 import h5py # conda install h5py
 
 #----------------------------------------------------------------------------
@@ -242,7 +243,7 @@ def create_data_channel_last(h5_filename, path2images, imgHW=(128,128)):
     glob_pattern = os.path.join(path2images, '*.jpg')
     image_filenames = sorted(glob.glob(glob_pattern))
     num_images = len(image_filenames)
-    num_images=5000
+    num_images=10000
     print((len(image_filenames)))
     
     test = []
@@ -259,13 +260,65 @@ def create_data_channel_last(h5_filename, path2images, imgHW=(128,128)):
     for idx in range(num_images):
         print('%d / %d\r' % (idx, num_images))
         img = PIL.Image.open(image_filenames[idx])
-        img=img.resize((w,h),PIL.Image.BICUBIC)
-        if img.mode != "RGB":
-            img=img.convert('RGB')
-        img = np.asarray(img)
-        
-        h5.add_images_channel_last(img[np.newaxis])
+        try:
+            img=img.resize((w,h),PIL.Image.BICUBIC)
+            if img.mode != "RGB":
+                img=img.convert('RGB')
+            img = np.asarray(img)
+            
+            h5.add_images_channel_last(img[np.newaxis])
+        except:
+            print("skip this image!")            
+    print('%-40s\r' % 'Flushing data...')
+    h5.close()
+    print('%-40s\r' % '')
+    print('Added %d images.' % num_images)
 
+
+def imgResizeWithPad(im_path,desired_size=512):
+    im = Image.open(im_path)
+    old_size = im.size  # old_size[0] is in (width, height) format
+    ratio = float(desired_size)/max(old_size)
+    new_size = tuple([int(x*ratio) for x in old_size])
+    im = im.resize(new_size, Image.ANTIALIAS)
+
+    # create a new image and paste the resized on it
+    new_im = Image.new("RGB", (desired_size, desired_size))
+    new_im.paste(im, ((desired_size-new_size[0])//2,
+                    (desired_size-new_size[1])//2))
+    return new_im
+
+
+def create_data_channel_last2(h5_filename, path2images, imgHW=(128,128)):
+    print('Creating data channel last dataset %s from %s' % (h5_filename, path2images))
+    #glob_pattern = os.path.join(celeba_dir, 'img_align_celeba_png', '*.png')
+    glob_pattern = os.path.join(path2images, '*.jpg')
+    image_filenames = sorted(glob.glob(glob_pattern))
+    num_images = len(image_filenames)
+    num_images=15000
+    print((len(image_filenames)))
+    
+    test = []
+    for i in image_filenames:
+        a=i.split('/')[-1]
+        a=a.split('.')[0]
+        test.append(int(a))
+    for i in range(1,len(test)):
+        if(test[i]!=test[i-1]+1):
+            print((test[i-1],test[i]))
+
+    h,w=imgHW
+    h5 = HDF5Exporter(h5_filename, resolution=h, channels=3)
+    for idx in range(num_images):
+        print('%d / %d\r' % (idx, num_images))
+        try:
+            img=imgResizeWithPad(image_filenames[idx],w)
+            if img.mode != "RGB":
+                img=img.convert('RGB')
+            img_array = np.asarray(img)
+            h5.add_images_channel_last(img_array[np.newaxis])
+        except:
+            print("skip this image!")            
     print('%-40s\r' % 'Flushing data...')
     h5.close()
     print('%-40s\r' % '')

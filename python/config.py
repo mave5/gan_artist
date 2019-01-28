@@ -1,13 +1,15 @@
 data_dir = 'datasets'
 import os
-genre="landscape"
-#genre="abstract"
+#genre="landscape"
+genre="portrait"
 result_dir = 'results'
 
 random_seed = 1000
 dataset = None
 H,W=512,512
-
+total_kimg=15000
+resume_network = '008-portrait/network-snapshot-001000'
+resume_kimg    = 0.0
 
 
 train = dict(                               # Training parameters:
@@ -27,8 +29,10 @@ train = dict(                               # Training parameters:
     lod_initial_resolution  = 4,            # Network resolution at the beginning.
     lod_training_kimg       = 600,          # Thousands of real images to show before doubling network resolution.
     lod_transition_kimg     = 600,          # Thousands of real images to show when fading in new layers.
-    total_kimg              = 15000,        # Thousands of real images to show in total.
+    total_kimg              = total_kimg,        # Thousands of real images to show in total.
     gdrop_coef              = 0.0,          # Do not inject multiplicative Gaussian noise in the discriminator.
+    resume_network          = resume_network,  
+    resume_kimg             = resume_kimg,
 )
 
 G = dict(                                   # Generator architecture:
@@ -74,6 +78,6 @@ if 1:
     h5_path=genre+"_"+str(H)+"by"+str(W)+".h5"
     dataset = dict(h5_path=h5_path, resolution=H, max_labels=0, mirror_augment=True)
 
-    train.update(lod_training_kimg=800, lod_transition_kimg=800, rampup_kimg=0, total_kimg=1000, minibatch_overrides={})
+    train.update(lod_training_kimg=800, lod_transition_kimg=800, rampup_kimg=0, minibatch_overrides={})
     G.update(fmap_base=2048)
     D.update(fmap_base=2048)

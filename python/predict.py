@@ -14,11 +14,27 @@ import config
 
 import misc
 
+# =============================================================================
+# configs
+# =============================================================================
+path2preTrainedWeights='pre-trained_weight'
+resolution=512
+numOfGenImages=1000
+
 
 def load_G_weights(G, path, by_name = True):
     G_path = os.path.join(path,'Generator.h5')
     G.load_weights(G_path, by_name = by_name)
     return G
+
+def load_GD_weights(G,D,path, by_name = True):
+    print("path to models: %s" %path)
+    G_path = os.path.join(path,'Generator.h5')
+    D_path = os.path.join(path,'Discriminator.h5')
+    G.load_weights(G_path, by_name = by_name)
+    D.load_weights(D_path, by_name = by_name)
+    print("pre-trained weights loaded!")
+    return G,D
 
 def rampup(epoch, rampup_length):
     if epoch < rampup_length:
@@ -72,16 +88,20 @@ def predict_gan():
     drange_viz              = [-1,1]
     image_grid_size         = None
     image_grid_type         = 'default'
-    resume_network          = 'pre-trained_weight'
+    resume_network          = path2preTrainedWeights
     
-    np.random.seed(config.random_seed)
+    #np.random.seed(config.random_seed)
 
     if resume_network:
         print("Resuming weight from:"+resume_network)
-        G = Generator(num_channels=3, resolution=128, label_size=0, **config.G)
-        G = load_G_weights(G,resume_network,True)
+        G = Generator(num_channels=3, resolution=resolution, label_size=0, **config.G)
+        #G = load_G_weights(G,resume_network,True)
+        D = Discriminator(num_channels=3, resolution=resolution, label_size=0, **config.D)        
+        G,D = load_GD_weights(G,D,resume_network,True)
+        
 
     print(G.summary())
+    print(D.summary())
 
     # Misc init.
 
@@ -90,6 +110,7 @@ def predict_gan():
             w, h = G.output_shape[1], G.output_shape[2]
             print("w:%d,h:%d"%(w,h))
             image_grid_size = np.clip(int(1920 // w), 3, 16).astype('int'), np.clip(1080 / h, 2, 16).astype('int')
+            image_grid_size=1,1
         
         print("image_grid_size:",image_grid_size)
     else:
@@ -97,9 +118,10 @@ def predict_gan():
 
     result_subdir = misc.create_result_subdir('pre-trained_result', config.run_desc)
 
-    for i in range(1,6):
+    for i in range(1,numOfGenImages):
         snapshot_fake_latents = random_latents(np.prod(image_grid_size), G.input_shape)
         snapshot_fake_images = G.predict_on_batch(snapshot_fake_latents)
+        snapshot_fake_scores = D.predict_on_batch(snapshot_fake_images)[0,0,0,0]
         misc.save_image_grid(snapshot_fake_images, os.path.join(result_subdir, 'pre-trained_%03d.png'%i), drange=drange_viz, grid_size=image_grid_size)
 
 if __name__ == '__main__':

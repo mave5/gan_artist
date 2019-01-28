@@ -6,8 +6,8 @@ backend="tensorflow"
 os.environ['KERAS_BACKEND'] = backend
 import argparse
 from datadownload import download_celeb_a
-from h5tool import create_celeba_channel_last
-from h5tool import create_data_channel_last
+#from h5tool import create_data_channel_last
+from h5tool import create_data_channel_last2 as  create_data_channel_last
 import config
 
 ###################################################################
@@ -122,17 +122,17 @@ if __name__ == "__main__":
                         default = None,
                         help="whether resume model and where the model are saved",
                         required = False)
-    parser.add_argument("--resume_kimg",type = float,
-                        default = 0.0,
-                        help="previous trained images in thousands",
-                        required = False)
-    args, unknown = parser.parse_known_args()
-    config.data_dir = os.path.join(os.getcwd(),args.data_dir)
-    config.result_dir = os.path.join(os.getcwd(),args.result_dir)
-    if hasattr(args,'resume_dir') and args.resume_dir != None:
-        config.train.update(resume_network=args.resume_dir)
-    if hasattr(args,'resume_kimg') and args.resume_kimg != None:
-        config.train.update(resume_kimg=args.resume_kimg)
+    #parser.add_argument("--resume_kimg",type = float,
+                        #default = 0.0,
+                        #help="previous trained images in thousands",
+                        #required = False)
+    #args, unknown = parser.parse_known_args()
+    #config.data_dir = os.path.join(os.getcwd(),args.data_dir)
+    #config.result_dir = os.path.join(os.getcwd(),args.result_dir)
+    #if hasattr(args,'resume_dir') and args.resume_dir != None:
+        #config.train.update(resume_network=args.resume_dir)
+    #if hasattr(args,'resume_kimg') and args.resume_kimg != None:
+        #config.train.update(resume_kimg=args.resume_kimg)
     
     download(config.genre,config.H,config.W,config.data_dir)
     main()

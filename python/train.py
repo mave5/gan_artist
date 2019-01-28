@@ -160,20 +160,23 @@ def train_gan(
     image_snapshot_ticks    = 1,
     network_snapshot_ticks  = 4,
     image_grid_type         = 'default',
-    #resume_network          = '000-celeba/network-snapshot-000488',
-    #resume_network          = "pre-trained_weight",
     resume_network          = None,
     resume_kimg             = 0.0,
     resume_time             = 0.0):
 
     training_set, drange_orig = load_dataset()
 
-
+    print("-"*50)
+    print("resume_kimg: %s" %resume_kimg)
+    print("-"*50)
+    
     if resume_network:
         print("Resuming weight from:"+resume_network)
         G = Generator(num_channels=training_set.shape[3], resolution=training_set.shape[1], label_size=training_set.labels.shape[1], **config.G)
         D = Discriminator(num_channels=training_set.shape[3], resolution=training_set.shape[1], label_size=training_set.labels.shape[1], **config.D)
         G,D = load_GD_weights(G,D,os.path.join(config.result_dir,resume_network),True)
+        print("pre-trained weights loaded!")
+        print("-"*50)
     else:
         G = Generator(num_channels=training_set.shape[3], resolution=training_set.shape[1], label_size=training_set.labels.shape[1], **config.G)
         D = Discriminator(num_channels=training_set.shape[3], resolution=training_set.shape[1], label_size=training_set.labels.shape[1], **config.D)
@@ -210,8 +213,11 @@ def train_gan(
     D.trainable = True
     D_train.compile(D_opt,loss=D_loss,loss_weights=D_loss_weight)
 
-
     cur_nimg = int(resume_kimg * 1000)
+    print("-"*50)
+    print("resume_kimg: %s" %resume_kimg)
+    print("current nimg: %s" %cur_nimg)
+    print("-"*50)
     cur_tick = 0
     tick_start_nimg = cur_nimg
     tick_start_time = time.time()

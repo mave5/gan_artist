@@ -4,7 +4,7 @@
 import os
 import glob
 
-path2imgs="./datasets/abstract/"
+path2imgs="./datasets/portrait/"
 glob_pattern = os.path.join(path2imgs, '*.jpg')
 image_filenames = sorted(glob.glob(glob_pattern))
 for i,imp in enumerate(image_filenames):
